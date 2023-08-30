@@ -1,13 +1,14 @@
-
 FROM ghcr.io/strangelove-ventures/horcrux:v3.1.0 AS horcrux
-FROM busybox:1.28
+FROM alpine:3.18
 
-#RUN apk add --update --no-cache libc-dev bash 
+RUN apk add --update --no-cache libc-dev bash 
+RUN mkdir -p /bin
+RUN mkdir -p /root
+COPY --chmod=755 --from=horcrux /bin/horcrux /bin/horcrux
+ADD --chmod=755 ./launch.sh /bin/launch.sh
+ADD --chmod=755 ./launch-single.sh /bin/launch-single.sh
 
-COPY --from=horcrux /bin/horcrux /bin
-ADD ./launch.sh /bin 
-ADD ./launch-single.sh /bin 
-
+#RUN ls -l /bin
 WORKDIR /root 
-ENTRYPOINT [ "/bin/bash" ] 
-CMD ["chain-id"]
+CMD "/bin/bash" 
+#CMD ["chain-id"]
