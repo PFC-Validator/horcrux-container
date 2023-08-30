@@ -6,7 +6,8 @@ FROM busybox:1.28
 
 COPY --from=horcrux /bin/horcrux /bin
 ADD ./launch.sh /bin 
+ADD ./launch-single.sh /bin 
 
 WORKDIR /root 
-ENTRYPOINT [ "/bin/launch.sh" ] 
+ENTRYPOINT [ "/bin/bash" ] 
 CMD ["chain-id"]
