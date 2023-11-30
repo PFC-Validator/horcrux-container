@@ -1,4 +1,4 @@
-FROM ghcr.io/strangelove-ventures/horcrux:v3.1.0 AS horcrux
+FROM ghcr.io/strangelove-ventures/horcrux:v3.2.1 AS horcrux
 FROM alpine:3.18
 
 RUN apk add --update --no-cache libc-dev bash 
