@@ -1,15 +1,23 @@
-FROM ghcr.io/strangelove-ventures/horcrux:v3.1.0 AS horcrux
-FROM alpine:3.18
+# Build horcrux from the PFC fork (PFC-developer/horcrux), synced to upstream
+# v3.3.2 -- the exact version the fleet already runs, so this changes only the
+# container substrate, not the signer software.
+FROM --platform=$BUILDPLATFORM golang:1.26-alpine AS build
+RUN apk add --no-cache git
+ARG TARGETARCH
+RUN git clone --depth 1 -b v3.3.2 https://github.com/PFC-developer/horcrux.git /src/horcrux && \
+    cd /src/horcrux && \
+    CGO_ENABLED=0 GOOS=linux GOARCH=$TARGETARCH go build -o /bin/horcrux ./cmd/horcrux
 
-RUN apk add --update --no-cache libc-dev bash 
+FROM alpine:3.24
+LABEL org.opencontainers.image.description "runs horcrux inside the PFC cluster"
+
+RUN apk add --update --no-cache libc-dev bash
 RUN mkdir -p /bin
 RUN mkdir -p /root
-COPY --chmod=755 --from=horcrux /bin/horcrux /bin/horcrux
+COPY --chmod=755 --from=build /bin/horcrux /bin/horcrux
 ADD --chmod=755 ./launch.sh /bin/launch.sh
 ADD --chmod=755 ./launch-single.sh /bin/launch-single.sh
 ADD --chmod=755 ./launch-all.sh /bin/launch-all.sh
 
-#RUN ls -l /bin
-WORKDIR /root 
-CMD "/bin/bash" 
-#CMD ["chain-id"]
+WORKDIR /root
+CMD "/bin/bash"
