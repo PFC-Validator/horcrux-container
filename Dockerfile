@@ -11,14 +11,13 @@
 FROM --platform=$BUILDPLATFORM golang:1.26-alpine AS build
 RUN apk add --no-cache git build-base
 ARG TARGETARCH
+# Native build only -- the CI workflow targets linux/amd64 (the fleet) and a
+# naive cross fallback cannot work for cgo (a native musl gcc rejects the
+# other arch's flags); do not reintroduce one without a real cross toolchain.
 RUN git clone --depth 1 -b v3.3.2-gno.6 https://github.com/gnolang/horcrux.git /src/horcrux && \
     cd /src/horcrux && \
-    export GOWORK=off && \
-    if [ "$TARGETARCH" != "$BUILDARCH" ]; then \
-      apk add --no-cache gcc musl-dev && GOARCH=$TARGETARCH CC=gcc CGO_ENABLED=1 go build -o /bin/horcrux ./cmd/horcrux; \
-    else \
-      CGO_ENABLED=1 go build -o /bin/horcrux ./cmd/horcrux; \
-    fi
+    apk add --no-cache gcc musl-dev && \
+    GOWORK=off CGO_ENABLED=1 go build -o /bin/horcrux ./cmd/horcrux
 
 FROM alpine:3.24
 LABEL org.opencontainers.image.description "runs horcrux inside the PFC cluster"
