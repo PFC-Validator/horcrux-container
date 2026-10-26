@@ -1,6 +1,7 @@
-# Build horcrux from the PFC fork (PFC-developer/horcrux), synced to upstream
-# v3.3.2 -- the exact version the fleet already runs, so this changes only the
-# container substrate, not the signer software.
+# Build horcrux from the PFC fork (PFC-developer/horcrux) at v3.3.3-pfc.1:
+# upstream v3.3.2 code + the dependency sweep (grpc 1.83.2, x/net 0.60,
+# cometbft 0.38.26, cosmos patch bumps; go-ethereum/ECIES deliberately held
+# at upstream's pin).
 # CGO is REQUIRED: horcrux's raft cosigners encrypt peer traffic with ECIES
 # (go-ethereum secp256k1), which panics without cgo -- a CGO_ENABLED=0 build
 # crashloops the 3-member signer clusters on every sign attempt while
@@ -8,7 +9,7 @@
 FROM --platform=$BUILDPLATFORM golang:1.26-alpine AS build
 RUN apk add --no-cache git build-base
 ARG TARGETARCH
-RUN git clone --depth 1 -b v3.3.2 https://github.com/PFC-developer/horcrux.git /src/horcrux && \
+RUN git clone --depth 1 -b v3.3.3-pfc.1 https://github.com/PFC-developer/horcrux.git /src/horcrux && \
     cd /src/horcrux && \
     if [ "$TARGETARCH" != "$BUILDARCH" ]; then \
       apk add --no-cache gcc musl-dev && GOARCH=$TARGETARCH CC=gcc CGO_ENABLED=1 go build -o /bin/horcrux ./cmd/horcrux; \
