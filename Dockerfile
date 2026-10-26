@@ -9,8 +9,9 @@
 FROM --platform=$BUILDPLATFORM golang:1.26-alpine AS build
 RUN apk add --no-cache git build-base
 ARG TARGETARCH
-RUN git clone --depth 1 -b v3.3.3-pfc.1 https://github.com/PFC-developer/horcrux.git /src/horcrux && \
+RUN git clone --depth 1 -b v3.3.3-pfc.2 https://github.com/PFC-developer/horcrux.git /src/horcrux && \
     cd /src/horcrux && \
+    export GOWORK=off && \
     if [ "$TARGETARCH" != "$BUILDARCH" ]; then \
       apk add --no-cache gcc musl-dev && GOARCH=$TARGETARCH CC=gcc CGO_ENABLED=1 go build -o /bin/horcrux ./cmd/horcrux; \
     else \
