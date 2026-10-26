@@ -1,7 +1,9 @@
-# Build horcrux from the PFC fork (PFC-developer/horcrux) at v3.3.3-pfc.1:
-# upstream v3.3.2 code + the dependency sweep (grpc 1.83.2, x/net 0.60,
-# cometbft 0.38.26, cosmos patch bumps; go-ethereum/ECIES deliberately held
-# at upstream's pin).
+# Build horcrux from the Gno team's production-hardened fork
+# (gnolang/horcrux, v3.3.2-gno lineage), consumed directly at their release
+# tags -- no intermediate PFC source fork. Their line carries the dependency
+# sweep, the grpc NewClient migration, and the ECIES fixed-width key encoding
+# fix (+tests). PFC-developer/horcrux is retired to a dormant pointer.
+# Our layer remains: CGO build, launch scripts, alpine runtime.
 # CGO is REQUIRED: horcrux's raft cosigners encrypt peer traffic with ECIES
 # (go-ethereum secp256k1), which panics without cgo -- a CGO_ENABLED=0 build
 # crashloops the 3-member signer clusters on every sign attempt while
@@ -9,7 +11,7 @@
 FROM --platform=$BUILDPLATFORM golang:1.26-alpine AS build
 RUN apk add --no-cache git build-base
 ARG TARGETARCH
-RUN git clone --depth 1 -b v3.3.3-pfc.2 https://github.com/PFC-developer/horcrux.git /src/horcrux && \
+RUN git clone --depth 1 -b v3.3.2-gno.6 https://github.com/gnolang/horcrux.git /src/horcrux && \
     cd /src/horcrux && \
     export GOWORK=off && \
     if [ "$TARGETARCH" != "$BUILDARCH" ]; then \
